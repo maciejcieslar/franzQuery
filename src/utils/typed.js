@@ -22,18 +22,19 @@ const getValueType = (value) => {
   return types[type.toUpperCase()];
 };
 
-const typed = (value, actions) => {
+const typed = (value, actions, ...additionalArgs) => {
   const type = getValueType(value);
+  const args = [value, ...additionalArgs];
 
   if (typeof actions[type] !== 'function' && actions.default) {
-    return actions.default(value);
+    return actions.default(...args);
   }
 
   if (typeof actions[type] !== 'function') {
     throw new TypeError('Unsupported type!');
   }
 
-  return actions[type](value);
+  return actions[type](...args);
 };
 
 export default typed;
