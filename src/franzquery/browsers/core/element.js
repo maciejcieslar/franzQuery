@@ -51,12 +51,12 @@ class Element {
     return this.el.textContent;
   }
 
-  onEvent(event, fn) {
+  addEventHandler(event, fn) {
     this.el.addEventListener(event, fn);
     return this;
   }
 
-  removeEvent(event, fn) {
+  removeEventHandler(event, fn) {
     this.el.removeEventListener(event, fn);
 
     return this;
@@ -171,6 +171,30 @@ class Element {
 
   find(selector) {
     return Array.from(this.el.querySelectorAll(selector));
+  }
+
+  prepend(...elements) {
+    this.el.prepend(...elements);
+
+    return this;
+  }
+
+  prependTo(element) {
+    element.prepend(this.el);
+
+    return this;
+  }
+
+  parent() {
+    return this.el.parentNode;
+  }
+
+  next() {
+    return this.el.nextElementSibling;
+  }
+
+  prev() {
+    return this.el.previousElementSibling;
   }
 }
 

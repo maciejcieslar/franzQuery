@@ -1,24 +1,13 @@
 import $ from './franzquery';
 
-const p = $([$('a'), 'p', 'div']);
+const p = $($('a'), 'p', 'div');
 
-const d = $('div');
-
+console.log('p');
 console.log(p);
-console.log(d);
 
-const testDiv = document.createElement('div');
+const c = $('div').merge(p);
 
-testDiv.textContent = 'asd';
+console.log(c.parent());
 
-d.append(testDiv);
-
-const x = $('div');
-
-console.log(x);
-
-const c = $('div').merge(x, d, p);
-
-console.log(c);
-
-console.log(c.position());
+console.log(c.prev());
+console.log(c.next());

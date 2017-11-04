@@ -52,7 +52,6 @@ class CoreQuery {
   }
 
   _getElementBySelector(selector) {
-    // selector - css selector
     const element = document.querySelector(selector);
 
     if (!element) {
@@ -70,7 +69,6 @@ class CoreQuery {
   _mergeElements(...elementsSets) {
     // ...elementsSets - Array of sets
     // set - Array of elements / element / selector
-
     const filteredSet = elementsSets.filter(el => el);
 
     return filterElements(this._normalizeElementLike(...filteredSet).map(el => this._ensureElement(el)));
@@ -86,7 +84,7 @@ class CoreQuery {
   }
 
   _hasElements() {
-    return this.elements.length;
+    return Boolean(this.elements.length);
   }
 
   _createInstance(...elements) {
@@ -117,6 +115,7 @@ class CoreQuery {
 
         return this._parseHTML(supposedSelector);
       },
+      null: () => null,
       default: () => {
         throw new TypeError('Unsupported element type.');
       },
@@ -129,38 +128,7 @@ class CoreQuery {
 
   // ---------------- API ----------------
 
-  merge(...instances) {
-    return this._createInstance(this, ...instances);
-  }
-
-  add(...sets) {
-    // set - elementsLike - Array of elements / element / selector
-    return this._createInstance(this.elements, ...sets);
-  }
-
-  getSelector() {
-    return this.selector;
-  }
-
-  addEventHandler(event, fn) {
-    this.forEach(el => el.onEvent(event, fn));
-
-    return this;
-  }
-
-  removeEventHandler(event, fn) {
-    this.forEach(el => el.removeEvent(event, fn));
-
-    return this;
-  }
-
-  map(fn) {
-    return this._createInstance(this.elements.map(fn));
-  }
-
-  filter(fn) {
-    return this._createInstance(this.elements.filter(fn));
-  }
+  // MANIPULATION
 
   forEach(fn) {
     return this.elements.forEach(fn);
@@ -185,28 +153,44 @@ class CoreQuery {
   }
 
   toggleClass(className) {
-    if (!this._hasElements()) {
-      return false;
-    }
+    this.elements.forEach(el => el.toggleClass(className));
 
-    this.elements[0].toggleClass(className);
     return true;
   }
 
-  containsClass(className) {
-    if (!this._hasElements()) {
-      return false;
-    }
+  empty() {
+    this.forEach(el => el.empty());
 
-    return this.elements[0].containsClass(className);
+    return this;
   }
 
-  addBack() {
-    if (!this._hasPreviousElements()) {
-      return this;
-    }
+  remove() {
+    this.forEach(el => el.remove());
 
-    return this._createInstance(this.elements, this.prevObject.elements);
+    return this;
+  }
+
+  prependTo(element) {
+    const actions = {
+      string: selector => this._getElementBySelector(selector),
+      default: el => el,
+    };
+
+    this.forEach((el) => {
+      const elem = typed(element, actions);
+      return el.prependTo(elem);
+    });
+
+    return this;
+  }
+
+  prepend(elementLike) {
+    this.forEach((el) => {
+      const elements = typed(elementLike, typedActions.elementLike, this);
+      return el.prepend(...elements);
+    });
+
+    return this;
   }
 
   after(elementLike) {
@@ -253,18 +237,46 @@ class CoreQuery {
     return this;
   }
 
+  addEventHandler(event, fn) {
+    this.forEach(el => el.addEventHandler(event, fn));
+
+    return this;
+  }
+
+  removeEventHandler(event, fn) {
+    this.forEach(el => el.removeEventHandler(event, fn));
+
+    return this;
+  }
+
+  // INSTANCES
+
+  merge(...instances) {
+    return this._createInstance(this, ...instances);
+  }
+
+  map(fn) {
+    return this._createInstance(this.elements.map(fn));
+  }
+
+  filter(fn) {
+    return this._createInstance(this.elements.filter(fn));
+  }
+
+  addBack() {
+    if (!this._hasPreviousElements()) {
+      return this;
+    }
+
+    return this._createInstance(this.elements, this.prevObject.elements);
+  }
+
   children() {
     return this._createInstance(this.elements.map(el => el.children()));
   }
 
   clone() {
     return this._createInstance(this.elements.map(el => el.clone(true)));
-  }
-
-  empty() {
-    this.forEach(el => el.empty());
-
-    return this;
   }
 
   eq(index) {
@@ -279,6 +291,44 @@ class CoreQuery {
     return this._createInstance(this.elements.slice(1));
   }
 
+  has(element) {
+    return this.elements.some(el => el.isEqual(element));
+  }
+
+  index(element) {
+    return this.elements.findIndex(el => el.isEqual(element));
+  }
+
+  next() {
+    return this._createInstance(this.elements.map(el => el.next()));
+  }
+
+  parent() {
+    return this._createInstance(this.elements.map(el => el.parent()));
+  }
+
+  slice(start, end) {
+    return this._createInstance(this.elements.slice(start, end));
+  }
+
+  prev() {
+    return this._createInstance(this.elements.map(el => el.prev()));
+  }
+
+  last() {
+    return this._createInstance(this.elements.slice(-1));
+  }
+
+  // GETTERS
+
+  containsClass(className) {
+    if (!this._hasElements()) {
+      return false;
+    }
+
+    return this.elements[0].containsClass(className);
+  }
+
   get() {
     if (!this._hasElements()) {
       return null;
@@ -287,8 +337,12 @@ class CoreQuery {
     return this.elements[0].get();
   }
 
-  has(element) {
-    return this.elements.some(el => el.isEqual(element));
+  getSelector() {
+    return this.selector;
+  }
+
+  length() {
+    return this.elements.length;
   }
 
   html() {
@@ -299,46 +353,12 @@ class CoreQuery {
     return this.elements[0].html();
   }
 
-  index(element) {
-    return this.elements.findIndex(el => el.isEqual(element));
-  }
-
-  last() {
-    return this._createInstance(this.elements.slice(-1));
-  }
-
-  get length() {
-    return this.elements.length;
-  }
-
-  next() {}
-
-  parent() {
-    return this._createInstance(this.elements.map(el => el.parent()));
-  }
-
   position() {
     if (!this._hasElements()) {
       return null;
     }
 
     return this.elements[0].position();
-  }
-
-  prepend() {}
-
-  prependTo() {}
-
-  prev() {}
-
-  remove() {
-    this.forEach(el => el.remove());
-
-    return this;
-  }
-
-  slice(start, end) {
-    return this._createInstance(this.elements.slice(start, end));
   }
 
   text() {
