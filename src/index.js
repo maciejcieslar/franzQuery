@@ -1,13 +1,8 @@
 import $ from './franzquery';
 
-const p = $($('a'), 'p', 'div');
+const divs = $('div');
 
-console.log('p');
-console.log(p);
+const allElements = $('body *');
 
-const c = $('div').merge(p);
-
-console.log(c.parent());
-
-console.log(c.prev());
-console.log(c.next());
+console.log(divs);
+console.log(allElements);

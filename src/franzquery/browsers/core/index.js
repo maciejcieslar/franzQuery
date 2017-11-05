@@ -23,7 +23,8 @@ class CoreQuery {
       browser,
     });
 
-    const selector = typed(elementsLike, typedActions.selectorLike);
+    const firstElement = Array.isArray(elementsLike) ? elementsLike[0] : elementsLike;
+    const selector = typed(firstElement, typedActions.selectorLike);
 
     Object.assign(this, {
       selector,
