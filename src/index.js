@@ -1,3 +1,8 @@
-import { typed } from './utils';
+import $ from './franzquery';
 
-typed(null, { null: () => console.log('lol') });
+const divs = $('div');
+
+const allElements = $('body *');
+
+console.log(divs);
+console.log(allElements);
